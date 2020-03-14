@@ -188,21 +188,14 @@ func grabTarget(input ScanTarget, m *Monitor) []byte {
 func Process(mon *Monitor) {
 	workers := config.Senders
 	processQueue := make(chan ScanTarget, workers*4)
-	outputQueue := make(chan []byte, workers*4)
+	outputQueue := make(chan []byte, workers*512)
 
-	//Create wait groups
+  //Create wait groups
 	var workerDone sync.WaitGroup
 	var outputDone sync.WaitGroup
 	workerDone.Add(int(workers))
 	outputDone.Add(1)
 
-	// Start the output encoder
-	go func() {
-		defer outputDone.Done()
-		if err := config.outputResults(outputQueue); err != nil {
-			log.Fatal(err)
-		}
-	}()
 	//Start all the workers
 	for i := 0; i < workers; i++ {
 		go func(i int) {
@@ -225,6 +218,14 @@ func Process(mon *Monitor) {
 	}
 	close(processQueue)
 	workerDone.Wait()
-	close(outputQueue)
+
+  // Start the output encoder
+	go func() {
+		defer outputDone.Done()
+		if err := config.outputResults(outputQueue); err != nil {
+			log.Fatal(err)
+		}
+	}()
+  close(outputQueue)
 	outputDone.Wait()
 }
