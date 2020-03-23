@@ -33,7 +33,7 @@ type ScanResponse struct {
 	// the scan name.
 	Protocol string `json:"protocol"`
 
-	Result    interface{} `json:"result,omitempty"`
+	Result    *interface{} `json:"result,omitempty"`
 	Timestamp string      `json:"timestamp,omitempty"`
 	Error     *string     `json:"error,omitempty"`
 }

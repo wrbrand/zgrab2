@@ -67,6 +67,33 @@ func (s *TLSScanner) InitPerSender(senderID int) error {
 	return nil
 }
 
+func (s *TLSScanner) Dial(t zgrab2.ScanTarget) (*TLSConnection, error) {
+  conn, err := s.config.TLSFlags.Connect(t, s.config.baseFlags)
+  return conn, err
+}
+
+func (s *TLSScanner) ScanConnection(t zgrab2.ScanTarget, c *TLSConnection) (zgrab2.ScanStatus, interface{}, error) {
+  err = conn.Handshake()
+  if conn != nil {
+		defer conn.Close()
+	}
+	if err != nil {
+		if conn != nil {
+			if log := conn.GetLog(); log != nil {
+				if log.HandshakeLog.ServerHello != nil {
+					// If we got far enough to get a valid ServerHello, then
+					// consider it to be a positive TLS detection.
+					return zgrab2.TryGetScanStatus(err), log, err
+				}
+				// Otherwise, detection failed.
+			}
+		}
+		return zgrab2.TryGetScanStatus(err), nil, err
+	}
+	return zgrab2.SCAN_SUCCESS, conn.GetLog(), nil
+
+}
+
 // Scan opens a TCP connection to the target (default port 443), then performs
 // a TLS handshake. If the handshake gets past the ServerHello stage, the
 // handshake log is returned (along with any other TLS-related logs, such as

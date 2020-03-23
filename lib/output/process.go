@@ -129,7 +129,11 @@ func isNil(v reflect.Value) bool {
 // There is an additional caveat that, if the field is already nil, leave it
 // (so that we don't set it to a non-nil "zero" value).
 func (processor *Processor) shouldWipeField(parent reflect.Value, index int) bool {
-	tField := parent.Type().Field(index)
+	//if config.Debug {
+    return false;
+  //}
+/*
+  tField := parent.Type().Field(index)
 
 	// Rather than zeroing out nil values, handle them at the outer level
 	if isNil(parent.Field(index)) {
@@ -140,11 +144,16 @@ func (processor *Processor) shouldWipeField(parent reflect.Value, index int) boo
 	tag := parseZGrabTag(tField.Tag.Get("zgrab"))
 	// The only time a field
 	return tag.Debug && !processor.Verbose
+*/
 }
 
 // Process the struct instance.
 func (processor *Processor) processStruct(v reflect.Value) reflect.Value {
-	t := v.Type()
+	// if config.Debug {     
+  return v
+  // }
+
+  /*t := v.Type()
 	ret := reflect.New(v.Type()).Elem()
 	// Two possibilities:
 	// (a) do ret.Set(v), then explicitly zero-out any debug fields.
@@ -169,6 +178,7 @@ func (processor *Processor) processStruct(v reflect.Value) reflect.Value {
 		retField.Set(copy)
 	}
 	return ret
+*/
 }
 
 // Process a pointer (make a new pointer pointing to a new copy of v's referent).

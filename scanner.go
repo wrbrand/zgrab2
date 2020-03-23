@@ -27,7 +27,7 @@ func PrintScanners() {
 }
 
 // RunScanner runs a single scan on a target and returns the resulting data
-func RunScanner(s Scanner, mon *Monitor, target ScanTarget) (string, ScanResponse) {
+func RunScanner(s Scanner, mon *Monitor, target ScanTarget) (string, *ScanResponse) {
 	t := time.Now()
 	status, res, e := s.Scan(target)
 	var err *string
@@ -39,8 +39,8 @@ func RunScanner(s Scanner, mon *Monitor, target ScanTarget) (string, ScanRespons
 		errString := e.Error()
 		err = &errString
 	}
-	resp := ScanResponse{Result: res, Protocol: s.Protocol(), Error: err, Timestamp: t.Format(time.RFC3339), Status: status}
-	return s.GetName(), resp
+	resp := ScanResponse{Result: &res, Protocol: s.Protocol(), Error: err, Timestamp: t.Format(time.RFC3339), Status: status}
+	return s.GetName(), &resp
 }
 
 func init() {
