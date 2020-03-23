@@ -2,8 +2,8 @@ package bin
 
 import (
 	"github.com/zmap/zgrab2"
-	"github.com/zmap/zgrab2/modules"
-	"github.com/zmap/zgrab2/modules/bacnet"
+//	"github.com/zmap/zgrab2/modules"
+/*	"github.com/zmap/zgrab2/modules/bacnet"
 	"github.com/zmap/zgrab2/modules/banner"
 	"github.com/zmap/zgrab2/modules/dnp3"
 	"github.com/zmap/zgrab2/modules/fox"
@@ -24,13 +24,14 @@ import (
 	"github.com/zmap/zgrab2/modules/smb"
 	"github.com/zmap/zgrab2/modules/smtp"
 	"github.com/zmap/zgrab2/modules/telnet"
+*/
 )
 
 var defaultModules zgrab2.ModuleSet
 
 func init() {
 	defaultModules = map[string]zgrab2.ScanModule{
-		"bacnet":   &bacnet.Module{},
+		/*"bacnet":   &bacnet.Module{},
 		"banner":   &banner.Module{},
 		"dnp3":     &dnp3.Module{},
 		"fox":      &fox.Module{},
@@ -51,7 +52,7 @@ func init() {
 		"smb":      &smb.Module{},
 		"smtp":     &smtp.Module{},
 		"ssh":      &modules.SSHModule{},
-		"telnet":   &telnet.Module{},
+		"telnet":   &telnet.Module{},*/
 		"tls":      &modules.TLSModule{},
 	}
 }

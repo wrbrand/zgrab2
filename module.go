@@ -22,6 +22,10 @@ type Scanner interface {
 
 	// Scan connects to a host. The result should be JSON-serializable
 	Scan(t ScanTarget) (ScanStatus, interface{}, error)
+
+  Dial(t ScanTarget) *TLSConnection
+
+  ScanConnection(conn *TLSConnection, mon *Monitor) (ScanStatus, interface{}, error)
 }
 
 // ScanResponse is the result of a scan on a single host

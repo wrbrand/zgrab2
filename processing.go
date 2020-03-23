@@ -264,7 +264,7 @@ func Process(mon *Monitor) {
           }
 
           // Todo: skipping a lot of steps here for multiple scans (see grabTarget)
-          sr := ScanResponse{Result: res, Protocol: scanner.Protocol(), Error: err, Timestamp: time.Now().Format(time.RFC3339), Status: status}
+          sr := ScanResponse{Result: &res, Protocol: scanner.Protocol(), Error: err, Timestamp: time.Now().Format(time.RFC3339), Status: status}
           moduleResult[scannerName] = &sr
         }
 
