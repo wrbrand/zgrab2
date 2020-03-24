@@ -205,10 +205,10 @@ type TargetConnection struct {
 // Process sets up an output encoder, input reader, and starts grab workers.
 func Process(mon *Monitor) {
   workers := config.Senders
-  numCoordinators := workers / 4
+  numCoordinators := workers / 6
 
   processQueue := make(chan ScanTarget, workers*4)
-  connectedQueue := make(chan TargetConnection)
+  connectedQueue := make(chan TargetConnection, 1024 * 1024)
   outputQueue := make(chan *[]byte, 1024 * 1024)
 
   //Create wait groups
@@ -222,14 +222,24 @@ func Process(mon *Monitor) {
   //Start the coordinator
   for i := 0; i < numCoordinators; i++ {
     go func() {
-      setAffinity(config.GOMAXPROCS - 1)
+      setAffinity(runtime.NumCPU() - (1 + i % 2))
 
       for _, scannerName := range orderedScanners {
         scanner := *scanners[scannerName]
         scanner.InitPerSender(0)
         for target := range processQueue {
           for run := uint(0); run < uint(config.ConnectionsPerHost); run++ {
-            connectedQueue <- TargetConnection{ Target: &target, Conn: scanner.Dial(target) }
+            conn, err := scanner.Dial(target)
+            if err != nil{
+              mon.statusesChan <- moduleStatus{name: scannerName, st: statusFailure}
+              //errString := err.Error()
+              // TODO: Should write out a failure here
+              continue
+            } else {
+              // TODO: should use actual deadline (scanner.config.BaseFlags.Timeout?)
+              conn.Conn.SetDeadline(time.Now().Add(time.Second * 1))
+              connectedQueue <- TargetConnection{ Target: &target, Conn: conn }
+            }
           }
         }
       }
@@ -241,7 +251,7 @@ func Process(mon *Monitor) {
   //Start all the workers
   for i := 0; i < workers; i++ {
     go func(i int) {
-      setAffinity(i % config.GOMAXPROCS)
+      setAffinity(i % (runtime.NumCPU() - 1))
       moduleResult := make(map[string]*ScanResponse)
 
       for _, scannerName := range orderedScanners {
@@ -251,7 +261,7 @@ func Process(mon *Monitor) {
 
         for tc := range connectedQueue {
           target = *tc.Target
-          status, res, e := scanner.ScanConnection(tc.Conn, mon)
+          status, res, e := scanner.ScanConnection(tc, mon)
           // TODO: Stolen from scanner.go:RunScanner, should be worked into that
           var err *string
           if e == nil {
@@ -281,11 +291,13 @@ func Process(mon *Monitor) {
   }
 
 
-
   if err := config.inputTargets(processQueue); err != nil {
     log.Fatal(err)
   }
   close(processQueue)
+  coordinatorDone.Wait()
+
+  close(connectedQueue)
   workerDone.Wait()
 
   // Start the output encoder

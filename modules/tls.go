@@ -67,13 +67,14 @@ func (s *TLSScanner) InitPerSender(senderID int) error {
 	return nil
 }
 
-func (s *TLSScanner) Dial(t zgrab2.ScanTarget) (*TLSConnection, error) {
-  conn, err := s.config.TLSFlags.Connect(t, s.config.baseFlags)
+func (s *TLSScanner) Dial(t zgrab2.ScanTarget) (*zgrab2.TLSConnection, error) {
+  conn, err := s.config.TLSFlags.Connect(&t, &s.config.BaseFlags)
   return conn, err
 }
 
-func (s *TLSScanner) ScanConnection(t zgrab2.ScanTarget, c *TLSConnection) (zgrab2.ScanStatus, interface{}, error) {
-  err = conn.Handshake()
+func (s *TLSScanner) ScanConnection(tc zgrab2.TargetConnection, mon *zgrab2.Monitor) (zgrab2.ScanStatus, interface{}, error) {
+  conn := tc.Conn
+  err := conn.Handshake()
   if conn != nil {
 		defer conn.Close()
 	}

@@ -2,7 +2,7 @@ package bin
 
 import (
 	"github.com/zmap/zgrab2"
-//	"github.com/zmap/zgrab2/modules"
+	"github.com/zmap/zgrab2/modules"
 /*	"github.com/zmap/zgrab2/modules/bacnet"
 	"github.com/zmap/zgrab2/modules/banner"
 	"github.com/zmap/zgrab2/modules/dnp3"
