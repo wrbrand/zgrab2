@@ -14,7 +14,7 @@ import (
 type Grab struct {
 	IP     string                  `json:"ip,omitempty"`
 	Domain string                  `json:"domain,omitempty"`
-	Data   map[string]ScanResponse `json:"data,omitempty"`
+	Data   map[string]*ScanResponse `json:"data,omitempty"`
 }
 
 // ScanTarget is the host that will be scanned
@@ -115,7 +115,7 @@ func (target *ScanTarget) OpenUDP(flags *BaseFlags, udp *UDPFlags) (net.Conn, er
 
 // BuildGrabFromInputResponse constructs a Grab object for a target, given the
 // scan responses.
-func BuildGrabFromInputResponse(t *ScanTarget, responses map[string]ScanResponse) *Grab {
+func BuildGrabFromInputResponse(t *ScanTarget, responses map[string]*ScanResponse) *Grab {
 	var ipstr string
 
 	if t.IP != nil {
@@ -150,7 +150,7 @@ func EncodeGrab(raw *Grab, includeDebug bool) ([]byte, error) {
 
 // grabTarget calls handler for each action
 func grabTarget(input ScanTarget, m *Monitor) []byte {
-	moduleResult := make(map[string]ScanResponse)
+	moduleResult := make(map[string]*ScanResponse)
 
 	for _, scannerName := range orderedScanners {
 		scanner := scanners[scannerName]
@@ -166,7 +166,7 @@ func grabTarget(input ScanTarget, m *Monitor) []byte {
 			}
 		}(scannerName)
 		name, res := RunScanner(*scanner, m, input)
-		moduleResult[name] = res
+		moduleResult[name] = &res
 		if res.Error != nil && !config.Multiple.ContinueOnError {
 			break
 		}
