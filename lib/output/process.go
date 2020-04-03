@@ -129,46 +129,12 @@ func isNil(v reflect.Value) bool {
 // There is an additional caveat that, if the field is already nil, leave it
 // (so that we don't set it to a non-nil "zero" value).
 func (processor *Processor) shouldWipeField(parent reflect.Value, index int) bool {
-	tField := parent.Type().Field(index)
-
-	// Rather than zeroing out nil values, handle them at the outer level
-	if isNil(parent.Field(index)) {
-		//fmt.Printf("Bogus copy becase nil: %s (%#v) to zero\n", processor.getPath(), tField)
-		return false
-	}
-
-	tag := parseZGrabTag(tField.Tag.Get("zgrab"))
-	// The only time a field
-	return tag.Debug && !processor.Verbose
+	return false
 }
 
 // Process the struct instance.
 func (processor *Processor) processStruct(v reflect.Value) reflect.Value {
-	t := v.Type()
-	ret := reflect.New(v.Type()).Elem()
-	// Two possibilities:
-	// (a) do ret.Set(v), then explicitly zero-out any debug fields.
-	// (b) only copy over fields that are non-debug.
-	// Going with (a)
-	ret.Set(v)
-	for i := 0; i < v.NumField(); i++ {
-		tField := t.Field(i)
-		field := v.Field(i)
-		retField := ret.Field(i)
-		if !retField.CanSet() {
-			// skip non-exportable fields
-			continue
-		}
-		if processor.shouldWipeField(v, i) {
-			retField.Set(reflect.Zero(field.Type()))
-			continue
-		}
-		processor.pushPath(fmt.Sprintf("%s(%d)", tField.Name, i), field)
-		copy := processor.process(field)
-		processor.popPath()
-		retField.Set(copy)
-	}
-	return ret
+  return v
 }
 
 // Process a pointer (make a new pointer pointing to a new copy of v's referent).
