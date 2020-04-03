@@ -149,7 +149,7 @@ func EncodeGrab(raw *Grab, includeDebug bool) ([]byte, error) {
 }
 
 // grabTarget calls handler for each action
-func grabTarget(input ScanTarget, m *Monitor) []byte {
+func grabTarget(input ScanTarget, m *Monitor) *[]byte {
 	moduleResult := make(map[string]*ScanResponse)
 
 	for _, scannerName := range orderedScanners {
@@ -181,14 +181,14 @@ func grabTarget(input ScanTarget, m *Monitor) []byte {
 		log.Fatalf("unable to marshal data: %s", err)
 	}
 
-	return result
+	return &result
 }
 
 // Process sets up an output encoder, input reader, and starts grab workers.
 func Process(mon *Monitor) {
 	workers := config.Senders
 	processQueue := make(chan ScanTarget, workers*4)
-	outputQueue := make(chan []byte, workers*4)
+	outputQueue := make(chan *[]byte, workers*4)
 
 	//Create wait groups
 	var workerDone sync.WaitGroup
@@ -212,8 +212,7 @@ func Process(mon *Monitor) {
 			}
 			for obj := range processQueue {
 				for run := uint(0); run < uint(config.ConnectionsPerHost); run++ {
-					result := grabTarget(obj, mon)
-					outputQueue <- result
+					outputQueue <- grabTarget(obj, mon)
 				}
 			}
 			workerDone.Done()

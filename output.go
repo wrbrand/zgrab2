@@ -132,22 +132,22 @@ func WidenMapKeys(input map[int]string) map[uint64]string {
 // A function of this type receives results on the provided channel
 // and outputs them somehow.  It returns nil if there are no further
 // results or error.
-type OutputResultsFunc func(results <-chan []byte) error
+type OutputResultsFunc func(results <-chan *[]byte) error
 
 // OutputResultsWriterFunc returns an OutputResultsFunc that wraps an io.Writer
 // in a buffered writer, and uses OutputResults.
 func OutputResultsWriterFunc(w io.Writer) OutputResultsFunc {
 	buf := bufio.NewWriter(w)
-	return func(result <-chan []byte) error {
+	return func(result <-chan *[]byte) error {
 		defer buf.Flush()
 		return OutputResults(buf, result)
 	}
 }
 
 // OutputResults writes results to a buffered Writer from a channel.
-func OutputResults(w *bufio.Writer, results <-chan []byte) error {
+func OutputResults(w *bufio.Writer, results <-chan *[]byte) error {
 	for result := range results {
-		if _, err := w.Write(result); err != nil {
+		if _, err := w.Write(*result); err != nil {
 			return err
 		}
 		if err := w.WriteByte('\n'); err != nil {
