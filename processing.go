@@ -11,7 +11,6 @@ import (
 	"github.com/zmap/zgrab2/lib/output"
 )
 
-// TODO: Something less grisly than an absolute path
 /*
 #cgo LDFLAGS: -lmtcp -L /usr/local/mtcp/lib -lpthread -lnuma -lrt
 #cgo CFLAGS: -I /usr/local/mtcp/include
