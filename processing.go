@@ -11,8 +11,16 @@ import (
 	"github.com/zmap/zgrab2/lib/output"
 )
 
-/*
+// TODO: Something less grisly than an absolute path
+//#cgo LDFLAGS: -L/usr/local/share/mtcp/mtcp/lib
 
+/*
+#cgo LDFLAGS: -lmtcp -L /usr/local/mtcp/lib -lpthread -lnuma -lrt
+#cgo CFLAGS: -I /usr/local/mtcp/include
+#define _GNU_SOURCE
+#include <stdlib.h>
+#include <mtcp_api.h>
+#include <mtcp_epoll.h>
 #include <sched.h>
 #include <pthread.h>
 
@@ -26,6 +34,7 @@ void lock_thread(int cpuid) {
 }
 */
 import "C"
+import "unsafe"
 
 // http://pythonwise.blogspot.com/2019/03/cpu-affinity-in-go.html?m=1 ;
 func setAffinity(cpuID int) {
@@ -226,6 +235,15 @@ func Process(mon *Monitor) {
 			log.Fatal(err)
 		}
 	}()
+
+  // TODO: Filename should be configurable
+  mtcp_config := C.CString("mtcp_config.conf")
+  if mtcp_err := C.mtcp_init(mtcp_config); mtcp_err != C.int(0) {
+    log.Errorf("Panic inititalizing mtcp")
+		panic(mtcp_err)
+  }
+  C.free(unsafe.Pointer(mtcp_config))
+
 	//Start all the workers
 	for i := 0; i < workers; i++ {
 		go func(i int) {
