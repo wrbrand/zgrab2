@@ -13,6 +13,12 @@ package syscall
 
 import "unsafe"
 
+/*
+#define _GNU_SOURCE
+#include <mtcp_api.h>
+*/
+import "C"
+
 func rawSyscallNoError(trap, a1, a2, a3 uintptr) (r1, r2 uintptr)
 
 /*

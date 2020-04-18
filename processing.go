@@ -4,16 +4,39 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"runtime"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/zmap/zgrab2/lib/output"
 )
 
+/*
+
+#include <sched.h>
+#include <pthread.h>
+
+void lock_thread(int cpuid) {
+  pthread_t tid;
+  cpu_set_t cpuset;
+  tid = pthread_self();
+  CPU_ZERO(&cpuset);
+  CPU_SET(cpuid, &cpuset);
+  pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
+}
+*/
+import "C"
+
+// http://pythonwise.blogspot.com/2019/03/cpu-affinity-in-go.html?m=1 ;
+func setAffinity(cpuID int) {
+	runtime.LockOSThread()
+	C.lock_thread(C.int(cpuID))
+}
+
 // Grab contains all scan responses for a single host
 type Grab struct {
-	IP     string                  `json:"ip,omitempty"`
-	Domain string                  `json:"domain,omitempty"`
+	IP     string                   `json:"ip,omitempty"`
+	Domain string                   `json:"domain,omitempty"`
 	Data   map[string]*ScanResponse `json:"data,omitempty"`
 }
 
@@ -206,6 +229,8 @@ func Process(mon *Monitor) {
 	//Start all the workers
 	for i := 0; i < workers; i++ {
 		go func(i int) {
+			setAffinity(i % 16)
+
 			for _, scannerName := range orderedScanners {
 				scanner := *scanners[scannerName]
 				scanner.InitPerSender(i)
