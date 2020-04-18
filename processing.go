@@ -12,8 +12,6 @@ import (
 )
 
 // TODO: Something less grisly than an absolute path
-//#cgo LDFLAGS: -L/usr/local/share/mtcp/mtcp/lib
-
 /*
 #cgo LDFLAGS: -lmtcp -L /usr/local/mtcp/lib -lpthread -lnuma -lrt
 #cgo CFLAGS: -I /usr/local/mtcp/include
