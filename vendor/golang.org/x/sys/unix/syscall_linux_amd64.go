@@ -6,6 +6,11 @@
 
 package unix
 
+import (
+  "unsafe"
+  "github.com/wrbrand/mtcp"
+)
+
 //sys	Dup2(oldfd int, newfd int) (err error)
 //sysnb	EpollCreate(size int) (fd int, err error)
 //sys	EpollWait(epfd int, events []EpollEvent, msec int) (n int, err error)
@@ -77,7 +82,11 @@ func Stat(path string, stat *Stat_t) (err error) {
 //sys	accept(s int, rsa *RawSockaddrAny, addrlen *_Socklen) (fd int, err error)
 //sys	accept4(s int, rsa *RawSockaddrAny, addrlen *_Socklen, flags int) (fd int, err error)
 //sys	bind(s int, addr unsafe.Pointer, addrlen _Socklen) (err error)
-//sys	connect(s int, addr unsafe.Pointer, addrlen _Socklen) (err error)
+
+func connect(s int, addr unsafe.Pointer, addrlen _Socklen) (err error) {
+  return mtcp.Connect(s, addr, uint32(addrlen))
+}
+
 //sysnb	getgroups(n int, list *_Gid_t) (nn int, err error)
 //sysnb	setgroups(n int, list *_Gid_t) (err error)
 //sys	getsockopt(s int, level int, name int, val unsafe.Pointer, vallen *_Socklen) (err error)
