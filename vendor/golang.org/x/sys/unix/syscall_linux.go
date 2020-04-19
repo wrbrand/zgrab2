@@ -992,8 +992,8 @@ func anyToSockaddr(fd int, rsa *RawSockaddrAny) (Sockaddr, error) {
 
 func Accept(fd int) (nfd int, sa Sockaddr, err error) {
 	var rsa RawSockaddrAny
-	var len _Socklen = SizeofSockaddrAny
-	nfd, err = accept(fd, &rsa, &len)
+  var len _Socklen = SizeofSockaddrAny
+	nfd, err = mtcp.Accept(fd, unsafe.Pointer(&rsa), unsafe.Pointer(&len))
 	if err != nil {
 		return
 	}
