@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"net"
 	"sync"
+  "time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/zmap/zgrab2/lib/output"
+  "github.com/monochromegane/kaburaya"
 )
 
 // Grab contains all scan responses for a single host
@@ -203,10 +205,18 @@ func Process(mon *Monitor) {
 			log.Fatal(err)
 		}
 	}()
-	//Start all the workers
+
+  sem := kaburaya.NewSem(100*time.Millisecond, 0.1)
+
+  //Start all the workers
 	for i := 0; i < workers; i++ {
+    workerDone.Add(1)
+    sem.Wait()
 		go func(i int) {
-			for _, scannerName := range orderedScanners {
+      defer sem.Signal()
+      defer workerDone.Done()
+
+      for _, scannerName := range orderedScanners {
 				scanner := *scanners[scannerName]
 				scanner.InitPerSender(i)
 			}
@@ -225,6 +235,7 @@ func Process(mon *Monitor) {
 	}
 	close(processQueue)
 	workerDone.Wait()
+  sem.Stop()
 	close(outputQueue)
 	outputDone.Wait()
 }
